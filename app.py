@@ -5,10 +5,6 @@ from dotenv import load_dotenv
 import streamlit as st
 from langchain_classic.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain_classic.chains.combine_documents.stuff import create_stuff_documents_chain
-# 🐛 CORRECTED Modern Imports
-#from langchain.chains import create_history_aware_retriever
-#from langchain.chains.retrieval import create_retrieval_chain
-#from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_community.vectorstores import FAISS
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
@@ -22,14 +18,9 @@ from langchain_community.document_loaders import PyPDFLoader
 #from langchain_ollama import OllamaEmbeddings
 
 load_dotenv()
-
-
-
 LANGCHAIN_API_KEY = st.secrets.get("LANGCHAIN_API_KEY")
 HF_TOKEN_SECRET = st.secrets.get("HF_TOKEN")
 
-
-# Use a dedicated embedding model
 embeddings = HuggingFaceEndpointEmbeddings(
     model="BAAI/bge-small-en-v1.5",
     task="feature-extraction",
@@ -37,27 +28,23 @@ embeddings = HuggingFaceEndpointEmbeddings(
 )
 
 
-## set up Streamlit 
+## setting up Streamlit 
 st.title("Conversational RAG With PDF uplaods and chat history")
 st.write("Upload Pdf's and chat with their content")
 
-## Input the Groq API Key
 api_key=st.text_input("Enter your Groq API key:",type="password")
 
-## Check if groq api key is provided
+## Checking if groq api key is provided
 if api_key:
     llm = ChatGroq(groq_api_key=api_key, model="llama-3.1-8b-instant")
 
-    ## chat interface
-
     session_id=st.text_input("Session ID",value="default_session")
-    ## statefully manage chat history
+    # statefully manage chat history
 
     if 'store' not in st.session_state:
         st.session_state.store={}
 
     uploaded_files=st.file_uploader("Choose A PDf file",type="pdf",accept_multiple_files=True)
-    ## Process uploaded  PDF's
     if uploaded_files:
         documents=[]
         for uploaded_file in uploaded_files:
@@ -70,7 +57,7 @@ if api_key:
             docs=loader.load()
             documents.extend(docs)
 
-    # Split and create embeddings for the documents
+    # Splitting and create embeddings for the documents
         print("started splitting")
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=5000, chunk_overlap=500)
         splits = text_splitter.split_documents(documents)
@@ -85,7 +72,7 @@ if api_key:
             "without the chat history. Do NOT answer the question, "
             "just reformulate it if needed and otherwise return it as is."
         )
-        contextualize_q_prompt = ChatPromptTemplate.from_messages(
+        contextualize_question_prompt = ChatPromptTemplate.from_messages(
                 [
                     ("system", contextualize_q_system_prompt),
                     MessagesPlaceholder("chat_history"),
@@ -93,11 +80,7 @@ if api_key:
                 ]
             )
         
-        history_aware_retriever=create_history_aware_retriever(llm,retriever,contextualize_q_prompt)
-
-        ## Answer question
-
-        # Answer question
+        history_aware_retriever=create_history_aware_retriever(llm,retriever,contextualize_question_prompt)
         system_prompt = (
                 "You are an assistant for question-answering tasks. "
                 "Use the following pieces of retrieved context to answer "
@@ -107,7 +90,7 @@ if api_key:
                 "\n\n"
                 "{context}"
             )
-        qa_prompt = ChatPromptTemplate.from_messages(
+        question_answer_prompt = ChatPromptTemplate.from_messages(
                 [
                     ("system", system_prompt),
                     MessagesPlaceholder("chat_history"),
@@ -115,7 +98,7 @@ if api_key:
                 ]
             )
         
-        question_answer_chain=create_stuff_documents_chain(llm,qa_prompt)
+        question_answer_chain=create_stuff_documents_chain(llm,question_answer_prompt)
         rag_chain=create_retrieval_chain(history_aware_retriever,question_answer_chain)
 
         def get_session_history(session:str)->BaseChatMessageHistory:
@@ -145,6 +128,7 @@ if api_key:
             st.write("Chat History:", session_history.messages)
 else:
     st.warning("Please enter the GRoq API Key")
+
 
 
 
