@@ -140,18 +140,12 @@ if api_key:
                 },  # constructs a key "abc123" in `store`.
             )
             # Retrieve the full history after the latest interaction
-            full_messages = session_history.messages 
-            
-            # Iterate through all messages (excluding the last two which are the current user input and the latest LLM response, which are handled next)
-            st.subheader("Conversation History")
-            for message in full_messages:
-                # LangChain messages have 'human' and 'ai' roles
-                role = "user" if message.type == "human" else "assistant"
-                with st.chat_message(role):
-                    st.write(message.content)
+            st.write(st.session_state.store)
             st.write("Assistant:", response['answer'])
+            st.write("Chat History:", session_history.messages)
 else:
     st.warning("Please enter the GRoq API Key")
+
 
 
 
