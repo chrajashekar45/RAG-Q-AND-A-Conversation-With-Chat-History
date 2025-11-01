@@ -22,17 +22,12 @@ from langchain_community.document_loaders import PyPDFLoader
 #from langchain_ollama import OllamaEmbeddings
 
 load_dotenv()
-'''
-os.environ['LANGCHAIN_API_KEY'] = os.getenv("LANGCHAIN_API_KEY")
-os.environ['LANGCHAIN_TRACING_V2'] = 'True'
-os.environ['LANGCHAIN_PROJECT'] = "Q AND A Chatbot with Conversation History"
-os.environ['HF_TOKEN'] = os.getenv("HF_TOKEN") '''
+
 
 
 st.secrets["LANGCHAIN_API_KEY"]
 st.secrets["HF_TOKEN"]
-# Add this print statement for debugging
-print(f"LANGCHAIN_API_KEY Loaded: {os.getenv('LANGCHAIN_API_KEY') is not None}")
+
 
 # Use a dedicated embedding model
 embeddings = HuggingFaceEndpointEmbeddings(
@@ -149,6 +144,7 @@ if api_key:
             st.write("Chat History:", session_history.messages)
 else:
     st.warning("Please enter the GRoq API Key")
+
 
 
 
