@@ -20,6 +20,6 @@ openai
 langserve
 beautifulsoup4
 groq
-pip install faiss-cpu
+faiss-cpu
 transformers
 sentence-transformers
