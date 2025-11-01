@@ -25,8 +25,8 @@ load_dotenv()
 
 
 
-st.secrets["LANGCHAIN_API_KEY"]
-st.secrets["HF_TOKEN"]
+LANGCHAIN_API_KEY = st.secrets.get("LANGCHAIN_API_KEY")
+HF_TOKEN_SECRET = st.secrets.get("HF_TOKEN")
 
 
 # Use a dedicated embedding model
@@ -152,6 +152,7 @@ if api_key:
             st.write("Assistant:", response['answer'])
 else:
     st.warning("Please enter the GRoq API Key")
+
 
 
 
